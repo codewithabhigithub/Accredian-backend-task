@@ -6,9 +6,11 @@ const cors = require('cors');
 require('dotenv').config(); // Use dotenv to manage environment variables
 
 const app = express();
-const prisma = new PrismaClient();
-app.use(bodyParser.json());
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'], // Enable detailed logging for Prisma Client
+});
 
+app.use(bodyParser.json());
 app.use(cors());
 
 app.post('/referrals', async (req, res) => {
@@ -60,4 +62,10 @@ const sendReferralEmail = async (name, email, message) => {
 
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
+});
+
+process.on('SIGINT', async () => {
+  console.log("check");
+  await prisma.$disconnect();
+  process.exit(0);
 });
