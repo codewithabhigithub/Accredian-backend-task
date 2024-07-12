@@ -34,7 +34,7 @@ app.post('/referrals', async (req, res) => {
     res.status(201).json(referral);
   } catch (error) {
     console.error('Error creating referral:', error); // Improved error logging
-    res.status(500).json({ error: 'Error creating referral' });
+    res.status(500).json({ error: error });
   }
 });
 
