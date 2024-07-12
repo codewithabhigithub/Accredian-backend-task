@@ -2,11 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { PrismaClient } = require('@prisma/client');
 const nodemailer = require('nodemailer');
+const cors = require('cors');
 require('dotenv').config(); // Use dotenv to manage environment variables
 
 const app = express();
 const prisma = new PrismaClient();
 app.use(bodyParser.json());
+
+app.use(cors());
 
 app.post('/referrals', async (req, res) => {
   console.log("AAA", req.body);
