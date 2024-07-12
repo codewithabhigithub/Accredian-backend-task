@@ -22,6 +22,7 @@ app.post('/referrals', async (req, res) => {
   }
 
   try {
+    console.log("DATABASE_URL:", process.env.DATABASE_URL);
     const referral = await prisma.referral.create({
       data: {
         name,
