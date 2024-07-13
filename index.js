@@ -41,6 +41,15 @@ app.post('/referrals', async (req, res) => {
   }
 });
 
+app.get('/test-db', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.send('Database connection is working!');
+  } catch (error) {
+    res.status(500).send('Database connection failed: ' + error.message);
+  }
+});
+
 const sendReferralEmail = async (name, email, message) => {
   console.log(email);
   let transporter = nodemailer.createTransport({
