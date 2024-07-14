@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "migrate": "npx prisma migrate dev --name init", 
+    "migrate": "npx prisma migrate dev --name init",
     "start-with-migration": "npm run migrate && npm start"
   },
   "keywords": [],
@@ -19,6 +19,7 @@
     "express": "^4.19.2",
     "mysql2": "^3.10.2",
     "nodemailer": "^6.9.14",
-    "prisma": "^5.16.2"
+    "prisma": "^5.16.2",
+    "yarn": "^1.22.22"
   }
 }
