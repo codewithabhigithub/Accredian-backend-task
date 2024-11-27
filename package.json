@@ -4,11 +4,10 @@
   "description": "",
   "main": "index.js",
    "scripts": {
-    "start": "node index.js",                        // Start the server
-    "dev": "nodemon index.js",                       // Start the server in development mode
-    "postinstall": "echo 'Installing required dependencies...'; npm install", // Run npm install after dependencies are added
-    "install-dependencies": "npm install"            // Run this manually to install dependencies once more if needed
-  },
+    "start": "node index.js",                        
+    "dev": "nodemon index.js",                      
+    "postinstall": "echo 'Installing required dependencies...'; npm install", 
+    "install-dependencies": "npm install"            
   "keywords": [],
   "author": "",
   "license": "ISC",
