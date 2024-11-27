@@ -1,20 +1,45 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { PrismaClient } = require('@prisma/client');
+const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-require('dotenv').config(); // Use dotenv to manage environment variables
+require('dotenv').config();
 
 const app = express();
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'], // Enable detailed logging for Prisma Client
+
+// Configure PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // Database URL from environment variable
+  ssl: false, // Disable SSL for local development
 });
 
-app.use(bodyParser.json());
+
+// Use CORS middleware
 app.use(cors());
 
+// Parse JSON body
+app.use(bodyParser.json());
+
+// Create the referrals table if it doesn't exist
+const createTableIfNotExists = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS referrals (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      referral_message TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+  await pool.query(query);
+};
+
+createTableIfNotExists().catch((error) => {
+  console.error('Error creating table:', error);
+});
+
+// Endpoint for handling referrals
 app.post('/referrals', async (req, res) => {
-  console.log("AAA", req.body);
   const { name, email, referralMessage } = req.body;
 
   if (!name || !email || !referralMessage) {
@@ -22,27 +47,25 @@ app.post('/referrals', async (req, res) => {
   }
 
   try {
-    console.log("DATABASE_URL:", process.env.DATABASE_URL);
-    const referral = await prisma.referral.create({
-      data: {
-        name,
-        email,
-        referralMessage,
-      },
-    });
+    // Insert referral into PostgreSQL
+    const result = await pool.query(
+      'INSERT INTO referrals (name, email, referral_message) VALUES ($1, $2, $3) RETURNING *',
+      [name, email, referralMessage]
+    );
+    const referral = result.rows[0]; // Retrieve the newly inserted referral
 
     // Send email notification
     await sendReferralEmail(name, email, referralMessage);
 
     res.status(201).json(referral);
   } catch (error) {
-    console.error('Error creating referral:', error); // Improved error logging
-    res.status(500).json({ error: error });
+    console.error('Error creating referral:', error);
+    res.status(500).json({ error: 'Error creating referral' });
   }
 });
 
+// Function to send email notification
 const sendReferralEmail = async (name, email, message) => {
-  console.log(email);
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -61,12 +84,14 @@ const sendReferralEmail = async (name, email, message) => {
   await transporter.sendMail(mailOptions);
 };
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+// Start server
+app.listen(4000, () => {
+  console.log('Server is running on port 4000');
 });
 
+// Gracefully close PostgreSQL pool on server shutdown
 process.on('SIGINT', async () => {
-  console.log("check");
-  await prisma.$disconnect();
+  console.log('Shutting down server...');
+  await pool.end();
   process.exit(0);
 });
