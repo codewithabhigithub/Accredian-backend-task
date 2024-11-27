@@ -8,16 +8,10 @@ require('dotenv').config();
 const app = express();
 
 // Configure PostgreSQL connection pool
-// const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL, // Database URL from environment variable
-//   ssl: false, // Disable SSL for local development
-// });
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
-
 
 // Use CORS middleware
 app.use(cors());
@@ -36,12 +30,15 @@ const createTableIfNotExists = async () => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
-  await pool.query(query);
+  try {
+    await pool.query(query);
+    console.log('Table created or already exists.');
+  } catch (error) {
+    console.error('Error creating table:', error);
+  }
 };
 
-createTableIfNotExists().catch((error) => {
-  console.error('Error creating table:', error);
-});
+createTableIfNotExists();
 
 // Endpoint for handling referrals
 app.post('/referrals', async (req, res) => {
@@ -71,7 +68,7 @@ app.post('/referrals', async (req, res) => {
 
 // Function to send email notification
 const sendReferralEmail = async (name, email, message) => {
-  let transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER,
@@ -79,7 +76,7 @@ const sendReferralEmail = async (name, email, message) => {
     },
   });
 
-  let mailOptions = {
+  const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
     subject: 'New Referral',
@@ -90,13 +87,20 @@ const sendReferralEmail = async (name, email, message) => {
 };
 
 // Start server
-app.listen(4000, () => {
-  console.log('Server is running on port 4000');
+const PORT = process.env.PORT || 4000; // Use Render's provided PORT or fallback to 4000
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 // Gracefully close PostgreSQL pool on server shutdown
 process.on('SIGINT', async () => {
   console.log('Shutting down server...');
+  await pool.end();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Received termination signal, shutting down...');
   await pool.end();
   process.exit(0);
 });
