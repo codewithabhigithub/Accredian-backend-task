@@ -7,15 +7,13 @@ require('dotenv').config();
 
 const app = express();
 
-// Configure PostgreSQL connection pool
+// Configure PostgreSQL connection pool with SSL settings
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,  // Database URL from the .env file
   ssl: {
-    rejectUnauthorized: false // This is required for Render's PostgreSQL
+    rejectUnauthorized: false  // Disable SSL certificate validation (required for Render's PostgreSQL)
   }
 });
-
-
 
 // Use CORS middleware
 app.use(cors());
@@ -34,12 +32,14 @@ const createTableIfNotExists = async () => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
-  await pool.query(query);
+  try {
+    await pool.query(query);
+  } catch (error) {
+    console.error('Error creating table:', error);
+  }
 };
 
-createTableIfNotExists().catch((error) => {
-  console.error('Error creating table:', error);
-});
+createTableIfNotExists();
 
 // Endpoint for handling referrals
 app.post('/referrals', async (req, res) => {
