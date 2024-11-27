@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
+   "scripts": {
     "start": "node index.js",
-    "migrate": "npx prisma migrate dev --name init",
-    "start-with-migration": "npm run migrate && npm start"
+    "dev": "nodemon index.js",
+    "postinstall": "echo 'Installing required dependencies...' && npm install"
   },
   "keywords": [],
   "author": "",
