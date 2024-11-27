@@ -8,11 +8,15 @@ require('dotenv').config();
 const app = express();
 
 // Configure PostgreSQL connection pool
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL, // Database URL from environment variable
+//   ssl: false, // Disable SSL for local development
+// });
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false,
-  },
+    rejectUnauthorized: false, // Disable certificate validation (useful for cloud-based databases)
+  },
 });
 
 
