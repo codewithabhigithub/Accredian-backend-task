@@ -7,7 +7,7 @@
     "start": "node index.js",                        
     "dev": "nodemon index.js",                      
     "postinstall": "echo 'Installing required dependencies...'; npm install", 
-    "install-dependencies": "npm install"            
+    "install-dependencies": "npm install"},            
   "keywords": [],
   "author": "",
   "license": "ISC",
